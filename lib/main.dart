@@ -190,7 +190,7 @@ class TouristSearchPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LoadingPage(query: query),
+                              builder: (context) => TripLoadingPage(query: query),
                             ),
                           );
                         }
@@ -264,16 +264,16 @@ class TouristSearchPage extends StatelessWidget {
 }
 
 // 로딩 페이지
-class LoadingPage extends StatefulWidget {
+class TripLoadingPage extends StatefulWidget {
   final String query;
 
-  const LoadingPage({super.key, required this.query});
+  const TripLoadingPage({super.key, required this.query});
 
   @override
-  State<LoadingPage> createState() => _LoadingPageState();
+  State<TripLoadingPage> createState() => _TripLoadingPageState();
 }
 
-class _LoadingPageState extends State<LoadingPage> {
+class _TripLoadingPageState extends State<TripLoadingPage> {
   @override
   void initState() {
     super.initState();
@@ -325,6 +325,68 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 }
 
+// 로딩 페이지
+class JobLoadingPage extends StatefulWidget {
+  final String query;
+
+  const JobLoadingPage({super.key, required this.query});
+
+  @override
+  State<JobLoadingPage> createState() => _JobLoadingPageState();
+}
+
+class _JobLoadingPageState extends State<JobLoadingPage> {
+  @override
+  void initState() {
+    super.initState();
+    _searchJobPlace();
+  }
+
+  void _searchJobPlace() async {
+    final url = Uri.parse("$domain/search_job/${Uri.encodeComponent(widget.query)}");
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final htmlBody = response.body;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchResultPage(htmlContent: htmlBody),
+          ),
+        );
+      } else {
+        _showError('검색에 실패했습니다.');
+      }
+    } catch (e) {
+      _showError('네트워크 오류가 발생했습니다.');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('일자리를 검색 중입니다...', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 // 결과 페이지
 class SearchResultPage extends StatelessWidget {
@@ -355,6 +417,8 @@ class JobSearchPage extends StatelessWidget {
       "image": jobs[index][2]
     },
   );
+
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -387,6 +451,17 @@ class JobSearchPage extends StatelessWidget {
                   SizedBox(width: 8),
                   Expanded(
                     child: TextField(
+                      controller: _searchController,
+                      onSubmitted: (query) {
+                        if (query.trim().isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => JobLoadingPage(query: query),
+                            ),
+                          );
+                        }
+                      },
                       decoration: InputDecoration(
                         hintText: '검색하려면 여기를 누르세요',
                         border: InputBorder.none,
@@ -454,3 +529,4 @@ class JobSearchPage extends StatelessWidget {
     );
   }
 }
+
