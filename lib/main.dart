@@ -16,7 +16,7 @@ List<List<String>> jobs = [
   ["에버랜드", "탭댄서", "https://dimg.donga.com/wps/NEWS/IMAGE/2021/07/12/107921227.1.jpg"]
 ];
 
-const String domain = "http://192.168.219.101:8000";
+const String domain = "http://124.50.174.4:9999";
 
 void is_server_available() async {
   print("domain : $domain");
